@@ -14,3 +14,19 @@ Here is a list of project features
 - [ ] Make a wifi template
 - [ ] Add an example
 - [ ] Add documentation
+
+## General
+### platformio settings
+It is recommended to turn verbose output on when compiling.
+This can be done by inserting the following command within a platformio terminal
+```
+platformio settings set force_verbose 1
+```
+To read more about platformio command settings:
+http://docs.platformio.org/en/latest/userguide/cmd_settings.html
+
+#### platformio.ini
+In the ini file, the monitor_baud is set to 115200 bps
+```
+monitor_baud = 115200
+```
