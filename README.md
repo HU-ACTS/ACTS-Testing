@@ -50,6 +50,7 @@ markdown-preview-plus(2.4.10+) by atom-community
 ESP-IDF should be configured correctly if it is installed correctly.
 
 ### Running your project
+To run your project, a tab to the left should show an arrow pointing to the right. This button builds and runs. Upload ports and config are searched for by platformio when left on default settings. These can be changed in platformio.ini (REQUIRES LINK). To open the Serial Monitor for communication, a button to the left that resembles a wall plug can be selected or tab ```PlatformIO -> Serial Monitor ``` or ```Alt + Shift + M ```.
 ~Good luck developing more content from the ACTS Team and me.
 ## More reads
 
