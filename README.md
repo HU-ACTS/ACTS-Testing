@@ -11,14 +11,36 @@ Instead each branch offers a test case but it also includes a template branch th
 - [ESP-IDF](https://esp-idf.readthedocs.io/en/latest/get-started/index.html)
 
 ### Required Hardware
-- ESP32
+- ESP32 wifi enabled micorcontroller
+- SD Cardreader SPI
+- BMP280 Pressure & Temperture sensor
+- MPU-9250 9DOF magneto, Gyro, Accel
 
 ### Installation
-1. Have a computer that has the latest version of Linux (distro), Mac or Windows installed.
-2. Install the ESP-IDF toolchain. For a very well written guide on how to this: https://esp-idf.readthedocs.io/en/latest/get-started/index.html.
-3. Install Atom: https://atom.io/
-4. Install the Platformio plugin on top of Atom: http://platformio.org/
+The installation instructions are split up in to two segments: windows and linux.
+They consist out off a short installation instruction and a long version. The short version points to the manufactors instructions (this is to have the most accurate and uptodate version). The long version is an extract from these pages as of 11-10-2017. As long as none of the manufactors have changed their procedures this would be accurate.
+USE WITH CAUTION AND COMMON SENSE.
+
+#### Windows: short version
+1. Have a computer that has the latest version of Windows installed.
+2. Install the ESP-IDF toolchain. For a very well written guide on how to this: 
+https://esp-idf.readthedocs.io/en/latest/get-started/windows-setup.html
+3. Install Atom: https://flight-manual.atom.io/getting-started/sections/installing-atom/#platform-windows
+4. Install the Platformio plugin on top of Atom: http://platformio.org/get-started/ide?install=atom
 Note: Both Atom and Platformio might take a while to install.
+
+#### Linux: short version
+1. Have a computer with a up to date version of a Linux distro.
+2. Install the ESP-IDF toolchain. For a very well written guide on how to this: 
+https://esp-idf.readthedocs.io/en/latest/get-started/linux-setup.html
+3. Install Atom: https://flight-manual.atom.io/getting-started/sections/installing-atom/#platform-linux
+4. Install the Platformio plugin on top of Atom: http://platformio.org/get-started/ide?install=atom
+Note: Both Atom and Platformio might take a while to install.
+
+#### Windows: long version
+1. Download the ESP-IDF, 
+#### Linux: long version
+
 
 ## Configuration
 ### Configuration of Atom/Platformio
@@ -34,7 +56,8 @@ framework = espidf
 
 You could also head to the template branch and copy paste the project from there by going to the tab PlatformIO and then selecting open project from that page.
 
-#### Installation of packages
+#### Installation of Platform IO
+
 To see installed packages or install new packages, go to the tab ```File -> Settings ```. From there navigate to Packages.
 
 The following packages are recommended to install in atom:
@@ -55,7 +78,9 @@ To run your project, a tab to the left should show an arrow pointing to the righ
 ## More reads
 
 ## Links/References
-
-
+* ESP32: http://espressif.com/en/products/hardware/esp32/overview
+* ESP32 setup: http://espressif.com/en/products/hardware/esp32/overview
+* Atom: https://atom.io/
+* PlatformIO: http://platformio.org/
 
 
