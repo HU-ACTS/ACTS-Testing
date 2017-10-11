@@ -23,7 +23,9 @@ USE WITH CAUTION AND COMMON SENSE.
 
 #### Windows: short version
 1. Have a computer that has the latest version of Windows installed.
-2. Install the ESP-IDF toolchain. For a very well written guide on how to this: 
+2. Install the ESP-IDF toolchain. For a very well written guide on how to this:
+
+
 https://esp-idf.readthedocs.io/en/latest/get-started/windows-setup.html
 3. Install Atom: https://flight-manual.atom.io/getting-started/sections/installing-atom/#platform-windows
 4. Install the Platformio plugin on top of Atom: http://platformio.org/get-started/ide?install=atom
@@ -31,16 +33,48 @@ Note: Both Atom and Platformio might take a while to install.
 
 #### Linux: short version
 1. Have a computer with a up to date version of a Linux distro.
-2. Install the ESP-IDF toolchain. For a very well written guide on how to this: 
+2. Install the ESP-IDF toolchain. For a very well written guide on how to this:
+
 https://esp-idf.readthedocs.io/en/latest/get-started/linux-setup.html
 3. Install Atom: https://flight-manual.atom.io/getting-started/sections/installing-atom/#platform-linux
 4. Install the Platformio plugin on top of Atom: http://platformio.org/get-started/ide?install=atom
 Note: Both Atom and Platformio might take a while to install.
 
 #### Windows: long version
-1. Download the ESP-IDF, 
-#### Linux: long version
+1. Download the ESP-IDF, https://dl.espressif.com/dl/esp32_win32_msys2_environment_and_toolchain-20170918.zip
+2. Unzip the downloaded zip file to c:\.
+3. Go into this newly created directory and run the C:\msys32\mingw32.exe.
+4. In the newly opened terminal type:
+```
+cd ~/esp
+git clone --recursive https://github.com/espressif/esp-idf.git
+```
+5. Close the terminal window and goto C:\msys32\etc\profile.d\ and create a file called export_idf_path.sh.
+6. Open the file and write and save: 
+``` export IDF_PATH="C:/msys32/ome/**_USER-NAME_**/esp/esp-idf" ```
+7. Install atom, by downloading the install https://atom.io/download/windows_x64
+8. execute the installer
+9. go to file -> settings -> install
+10. search and install platformio-ide
+11. your installation is now finished, clone the code from this repo and import it with platform io as a project.
 
+#### Linux: long version
+1. Download the ESP-IDF, https://dl.espressif.com/dl/esp32_win32_msys2_environment_and_toolchain-20170918.zip
+2. Unzip the downloaded zip file to c:\.
+3. Go into this newly created directory and run the C:\msys32\mingw32.exe.
+4. In the newly opened terminal type:
+```
+cd ~/esp
+git clone --recursive https://github.com/espressif/esp-idf.git
+```
+5. Close the terminal window and goto C:\msys32\etc\profile.d\ and create a file called export_idf_path.sh.
+6. Open the file and write and save: 
+``` export IDF_PATH="C:/msys32/ome/**_USER-NAME_**/esp/esp-idf" ```
+7. Install atom, by downloading the install https://atom.io/download/windows_x64
+8. execute the installer
+9. go to file -> preferences -> install
+10. search and install platformio-ide
+11. your installation is now finished, clone the code from this repo and import it with platform io as a project. 
 
 ## Configuration
 ### Configuration of Atom/Platformio
