@@ -3,6 +3,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/event_groups.h"
 #include "esp_system.h"
 #include "esp_spi_flash.h"
 #include "nvs_flash.h"
@@ -10,7 +11,6 @@
 #include "esp_event_loop.h"
 #include "driver/gpio.h"
 #include "sdkconfig.h"
-#include "test.hpp"
 
 // Define led pin
 #define BLINK_GPIO 13
@@ -37,7 +37,19 @@ esp_err_t event_handler(void *ctx, system_event_t *event)
 
 extern "C" void app_main(void)
 {
-    test newTest;
+    EventGroupHandle_t xCreatedEventGroup;
+    xCreatedEventGroup = xEventGroupCreate();
+
+    if( xCreatedEventGroup == NULL )
+    {
+        /* The event group was not created because there was insufficient
+        FreeRTOS heap available. */
+    }
+    else
+    {
+        /* The event group was created. */
+    }
+
     nvs_flash_init();
     tcpip_adapter_init();
     ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
