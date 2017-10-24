@@ -35,15 +35,14 @@
 #include "driver/timer.h"
 
 // timer defines
-#define TIMER_INTR_SEL TIMER_INTR_LEVEL  /*!< Timer level interrupt */
-#define TIMER_GROUP    TIMER_GROUP_0     /*!< Test on timer group 0 */
-#define TIMER_DIVIDER   16               /*!< Hardware timer clock divider */
-#define TIMER_SCALE    (TIMER_BASE_CLK / TIMER_DIVIDER)  /*!< used to calculate counter value */
-#define TIMER_FINE_ADJ   (1.4*(TIMER_BASE_CLK / TIMER_DIVIDER)/1000000) /*!< used to compensate alarm value */
-#define TIMER_INTERVAL0_SEC   (3.4179)   /*!< test interval for timer 0 */
-#define TIMER_INTERVAL1_SEC   (5.78)   /*!< test interval for timer 1 */
-#define TEST_WITHOUT_RELOAD   0   /*!< example of auto-reload mode */
-#define TEST_WITH_RELOAD   1      /*!< example without auto-reload mode */
+#define TIMER_INTR_SEL          TIMER_INTR_LEVEL  /*!< Timer level interrupt */
+#define TIMER_GROUP             TIMER_GROUP_0     /*!< Test on timer group 0 */
+#define TIMER_DIVIDER           16               /*!< Hardware timer clock divider */
+#define TIMER_SCALE             (TIMER_BASE_CLK / TIMER_DIVIDER)  /*!< used to calculate counter value */
+#define TIMER_FINE_ADJ          (1.4 * (TIMER_BASE_CLK / TIMER_DIVIDER) / 1000000) /*!< used to compensate alarm value */
+#define TIMER_INTERVAL0_SEC     (0.01)   /*!< test interval for timer 0 */
+#define TEST_WITHOUT_RELOAD     0   /*!< example of auto-reload mode */
+#define TEST_WITH_RELOAD        1      /*!< example without auto-reload mode */
 
 typedef struct {
     int type;                  /*!< event type */
@@ -94,7 +93,7 @@ void sleep_task(void *pvParamter)
         printf("Woken up by timer\n");
     }
     else {
-      printf("Woken up by something else\n");
+        printf("Woken up by something else\n");
     }
 
     const int wakeup_time_sec = 5;
@@ -176,9 +175,9 @@ void spi_task(void *pvParameter)
     t.user=(void*)1;                //D/C needs to be set to
 
     while(1) {
-      ret=spi_device_transmit(spi, &t);  //Transmit!
-      assert(ret==ESP_OK);            //Should have had no issues.
-      vTaskDelay(10 / portTICK_PERIOD_MS);
+        ret=spi_device_transmit(spi, &t);  //Transmit!
+        assert(ret==ESP_OK);            //Should have had no issues.
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
@@ -205,20 +204,17 @@ void IRAM_ATTR timer_group0_isr(void *para)
     if((intr_status & BIT(timer_idx)) && timer_idx == TIMER_0) {
         //Timer0 is an example that doesn't reload counter value
         TIMERG0.hw_timer[timer_idx].update = 1;
-
         // We don't call a API here because they are not declared with IRAM_ATTR.
         // If we're okay with the timer irq not being serviced while SPI flash cache is disabled,
         // we can alloc this interrupt without the ESP_INTR_FLAG_IRAM flag and use the normal API.
         TIMERG0.int_clr_timers.t0 = 1;
         uint64_t timer_val = ((uint64_t) TIMERG0.hw_timer[timer_idx].cnt_high) << 32 | TIMERG0.hw_timer[timer_idx].cnt_low;
-
         //Post an event to out example task
         evt.type = TEST_WITHOUT_RELOAD;
         evt.group = 0;
         evt.idx = timer_idx;
         evt.counter_val = timer_val;
         xQueueSendFromISR(timer_queue, &evt, NULL);
-
         //For a timer that will not reload, we need to set the next alarm value each time.
         timer_val += (uint64_t) (TIMER_INTERVAL0_SEC * (TIMER_BASE_CLK / TIMERG0.hw_timer[timer_idx].config.divider));
         //Fine adjust
@@ -227,7 +223,6 @@ void IRAM_ATTR timer_group0_isr(void *para)
         TIMERG0.hw_timer[timer_idx].alarm_low = (uint32_t) timer_val;
         //After set alarm, we set alarm_en bit if we want to enable alarm again.
         TIMERG0.hw_timer[timer_idx].config.alarm_en = 1;
-
     }
 }
 
@@ -264,32 +259,18 @@ static void timer_example_evt_task(void *arg)
 {
     example_tg0_timer0_init();
 
+    int counter = 0;
+
+    timer_event_t evt;
+
     while(1) {
-        timer_event_t evt;
+        // wait for queue to be ready
         xQueueReceive(timer_queue, &evt, portMAX_DELAY);
-        if(evt.type == TEST_WITHOUT_RELOAD) {
-            printf("\n\n   example of count-up-timer \n");
-        } else if(evt.type == TEST_WITH_RELOAD) {
-            printf("\n\n   example of reload-timer \n");
-
+        // feedback
+        if(counter++ == 100) {
+            ESP_LOGI(TAG, "Tick");
+            counter = 0;
         }
-        //Show timer event from interrupt
-        printf("-------INTR TIME EVT--------\n");
-        printf("TG[%d] timer[%d] alarm evt\n", evt.group, evt.idx);
-        printf("reg: ");
-        print_u64(evt.counter_val);
-
-        double time = (double) evt.counter_val / (TIMER_BASE_CLK / TIMERG0.hw_timer[evt.idx].config.divider);
-        printf("time: %.8f S\n", time);
-        //Read timer value from task
-        printf("======TASK TIME======\n");
-        uint64_t timer_val;
-        timer_get_counter_value((timer_group_t)evt.group, (timer_idx_t)evt.idx, &timer_val);
-        timer_get_counter_time_sec((timer_group_t)evt.group, (timer_idx_t)evt.idx, &time);
-        printf("TG[%d] timer[%d] alarm evt\n", evt.group, evt.idx);
-        printf("reg: ");
-        print_u64(timer_val);
-        printf("time: %.8f S\n", time);
     }
 }
 
@@ -312,55 +293,66 @@ esp_err_t event_handler(void *ctx, system_event_t *event)
     return ESP_OK;
 }
 
-bool wifi_connect_to_ap(char* SSID, char* PASS) {
-  tcpip_adapter_init();
-  wifi_event_group = xEventGroupCreate();
-  ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
-  wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-  ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
-  ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
-  wifi_config_t wifi_config = {};
-  strcpy((char*)wifi_config.sta.ssid, SSID);
-  if(PASS != NULL) {
-    strcpy((char*)wifi_config.sta.password, PASS);
-  }
-  ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
-  ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
-  ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
-  ESP_ERROR_CHECK( esp_wifi_start() );
+bool wifi_connect_to_ap(char* SSID, char* PASS, int timeout) {
+    tcpip_adapter_init();
 
-  xEventGroupWaitBits(wifi_event_group, BIT0, false, true, portMAX_DELAY);
-  return (bool) (xEventGroupGetBits(wifi_event_group) & 1);
+    wifi_event_group = xEventGroupCreate();
+    ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
+
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
+
+    ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
+
+    ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
+
+    wifi_config_t wifi_config = {};
+    strcpy((char*)wifi_config.sta.ssid, SSID);
+    if(PASS != NULL) {
+      strcpy((char*)wifi_config.sta.password, PASS);
+    }
+    ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+
+    ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
+    ESP_ERROR_CHECK( esp_wifi_start() );
+
+    xEventGroupWaitBits(wifi_event_group, BIT0, false, true, timeout);
+    return (bool) (xEventGroupGetBits(wifi_event_group) & 1);
 }
 
 bool wifi_set_up_ap(char* SSID, char* PASS) {
-  tcpip_adapter_init();
-  wifi_event_group = xEventGroupCreate();
-  ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
-  wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-  ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
-  ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
-  wifi_config_t conf;
-  strcpy((char*)conf.ap.ssid, SSID);
-  conf.ap.ssid_len = strlen(SSID);
-  if(PASS != NULL) {
-    strcpy((char*)conf.ap.password, PASS);
-    conf.ap.authmode = WIFI_AUTH_WPA2_PSK;
-  }
-  else {
-    *conf.ap.password = 0;
-    conf.ap.authmode = WIFI_AUTH_OPEN;
-  }
-  conf.ap.channel = 5;
-  conf.ap.ssid_hidden = 0;
-  conf.ap.max_connection = 4;
-  conf.ap.beacon_interval = 100;
-  ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", conf.sta.ssid);
-  ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_AP) );
-  ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_AP, &conf) );
-  ESP_ERROR_CHECK( esp_wifi_start() );
+    tcpip_adapter_init();
 
-  return true;
+    wifi_event_group = xEventGroupCreate();
+    ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
+
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
+
+    ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
+
+    ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_AP) );
+
+    wifi_config_t conf;
+    strcpy((char*)conf.ap.ssid, SSID);
+    conf.ap.ssid_len = strlen(SSID);
+    if(PASS != NULL) {
+      strcpy((char*)conf.ap.password, PASS);
+      conf.ap.authmode = WIFI_AUTH_WPA2_PSK;
+    }
+    else {
+      *conf.ap.password = 0;
+      conf.ap.authmode = WIFI_AUTH_OPEN;
+    }
+    conf.ap.channel = 5;
+    conf.ap.ssid_hidden = 0;
+    conf.ap.max_connection = 4;
+    conf.ap.beacon_interval = 100;
+    ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", conf.sta.ssid);
+    ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_AP, &conf) );
+
+    ESP_ERROR_CHECK( esp_wifi_start() );
+    return true;
 }
 
 extern "C" void app_main(void)
@@ -377,6 +369,8 @@ extern "C" void app_main(void)
     nvs_flash_init();
 
     //wifi_set_up_ap((char*)"Allyouare", (char*)"Meulen-2017");
+    wifi_connect_to_ap((char*)"eduroam", (char*)"Sander1994", 500);
+    esp_wifi_stop();
 
     xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
 
