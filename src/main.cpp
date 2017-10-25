@@ -90,8 +90,8 @@ extern "C" void app_main(void)
 
     // Start blink task
     // xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
-    auto sensorTask = new SensorTask(0);
-    auto sdWriterTask = new SdWriterTask(0);
-    auto wifiTask = new WifiTask(1);
+    // auto sensorTask = new SensorTask(0);
+    // auto sdWriterTask = new SdWriterTask(0);
+    // auto wifiTask = new WifiTask(1);
 
 }

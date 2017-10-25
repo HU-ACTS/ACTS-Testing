@@ -9,8 +9,9 @@ class SdWriterTask : BaseTask  {
 public:
   SdWriterTask(unsigned int task_priority);
   ~SdWriterTask() = delete; //Should be deleted?
+  std::array<int, 10000> simple_test_buffer;
 private:
-    std::array<int, 10000> simple_test_buffer;
+
 protected:
   void main_task();
 };
