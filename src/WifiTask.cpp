@@ -1,7 +1,21 @@
 #include "WifiTask.hpp"
 #define mainSOFTWARE_TIMER_PERIOD_MS        pdMS_TO_TICKS( 1000 )
 void run_wifi_task(void *args)  {
-  while(1);
+    EventGroupHandle_t& egh = (EventGroupHandle_t& )args;
+    while(1)  {
+        EventBits_t uxBits;
+        uxBits = xEventGroupWaitBits(egh, WifiActivateFlag | WifiReadyFlag, pdTRUE, pdFALSE, 0);
+
+        if(uxBits == WifiActivateFlag){
+            // Todo Wifi module should be activated and a connection should be tried to establish. If set, enable the WifiReadyFlag
+        }
+        else if(uxBits != WifiReadyFlag)    {
+            // Todo Send data over wifi to the server
+        }
+        else {
+            // Should not occur (only WifiActivateFlag and WifiReadyFlag bit have been set)
+        }
+    }
 }
 void system_timers_callback( TimerHandle_t xTimer )  {
   //Todo set bit 4

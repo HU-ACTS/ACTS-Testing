@@ -7,6 +7,6 @@ public:
   WifiTask(unsigned int task_priority, EventGroupHandle_t& egh);
 private:
 protected:
-  void WifiTask::main_task();
+  void main_task();
 };
 #endif //WIFI_TASK_HPP
