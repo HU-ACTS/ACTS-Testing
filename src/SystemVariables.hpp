@@ -1,6 +1,5 @@
-//
-// #ifndef SYSTEM_VARS_HPP
-// #define SYSTEM_VARS_HPP
-// #include "freertos/event_groups.h"
-// EventGroupHandle_t xCreatedEventGroup;
-// #endif //SYSTEM_VARS_HPP
+#ifndef SYSTEM_VARS_HPP
+#define SYSTEM_VARS_HPP
+#include "freertos/event_groups.h"
+static EventGroupHandle_t egh;
+#endif //SYSTEM_VARS_HPP

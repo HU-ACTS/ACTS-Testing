@@ -4,7 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
-
+#include "SystemVariables.hpp"
 #define BIT_0	( 1 << 0 )
 #define BIT_4	( 1 << 4 )
 
@@ -27,13 +27,11 @@ const EventBits_t WifiReadyFlag         = (1 << 2);
 /// @brief The base class that contains the requirements that all tasks require to operate
 class BaseTask{
 public:
-  BaseTask(unsigned int task_priority, EventGroupHandle_t& egh) : task_priority{task_priority}, egh{egh} {} ;
+  BaseTask(unsigned int task_priority) : task_priority{task_priority} {} ;
 private:
-
 protected:
   ~BaseTask();
   unsigned int task_priority;
-  EventGroupHandle_t& egh;
   virtual void main_task() = 0;
 };
 #endif //BASE_TASK_HPP

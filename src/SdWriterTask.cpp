@@ -7,8 +7,14 @@ void run_sd_task(void *args) {
         EventBits_t uxBits;
         uxBits = xEventGroupWaitBits(egh, SensorBufferSdReady, pdTRUE, pdFALSE, 0);
 
-        if(uxBits == SensorBufferSdReady){
+        if(uxBits & SensorBufferSdReady){
             // Todo handle writing of buffer to sd card...
+            // [&] (simple_test_buffer)    {
+            //
+            // }
+            // for(std::array<int>::iterator it = simple_test_buffer.begin(); it != simple_test_buffer.end(); ++it)    {
+            //     printf("%i", *it);
+            // }
         }
         else {
             // Should not occur (only SensorBufferSdReady bit has been set)
@@ -16,7 +22,7 @@ void run_sd_task(void *args) {
     }
 }
 
-SdWriterTask::SdWriterTask(unsigned int task_priority, EventGroupHandle_t& egh) : BaseTask(task_priority, egh)  {}
+SdWriterTask::SdWriterTask(unsigned int task_priority) : BaseTask(task_priority)  {}
 
 void SdWriterTask::main_task() {
   TaskHandle_t xHandle = NULL;

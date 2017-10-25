@@ -1,15 +1,15 @@
 #include "WifiTask.hpp"
 #define mainSOFTWARE_TIMER_PERIOD_MS        pdMS_TO_TICKS( 1000 )
 void run_wifi_task(void *args)  {
-    EventGroupHandle_t& egh = (EventGroupHandle_t& )args;
+    //EventGroupHandle_t& egh = (EventGroupHandle_t& )args;
     while(1)  {
         EventBits_t uxBits;
         uxBits = xEventGroupWaitBits(egh, WifiActivateFlag | WifiReadyFlag, pdTRUE, pdFALSE, 0);
 
-        if(uxBits == WifiActivateFlag){
+        if(uxBits & WifiActivateFlag){
             // Todo Wifi module should be activated and a connection should be tried to establish. If set, enable the WifiReadyFlag
         }
-        else if(uxBits != WifiReadyFlag)    {
+        else if(uxBits & WifiReadyFlag)    {
             // Todo Send data over wifi to the server
         }
         else {
@@ -20,7 +20,7 @@ void run_wifi_task(void *args)  {
 void system_timers_callback( TimerHandle_t xTimer )  {
   //Todo set bit 4
 }
-WifiTask::WifiTask(unsigned int task_priority, EventGroupHandle_t& egh) : BaseTask(task_priority, egh)  {}
+WifiTask::WifiTask(unsigned int task_priority) : BaseTask(task_priority)  {}
 
 void WifiTask::main_task() {
   TimerHandle_t wifi_poll_timer = NULL;

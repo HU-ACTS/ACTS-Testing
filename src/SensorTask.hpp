@@ -4,9 +4,9 @@
 #include "BaseTask.hpp"
 class SensorTask : BaseTask {
 public:
-  SensorTask(unsigned int task_priority, EventGroupHandle_t& egh);
+    SensorTask(unsigned int task_priority);
 private:
 protected:
-  void main_task();
+    void main_task();
 };
 #endif //SENSOR_TASK_HPP

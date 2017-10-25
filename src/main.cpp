@@ -11,7 +11,12 @@
 #include "esp_event_loop.h"
 #include "driver/gpio.h"
 #include "sdkconfig.h"
+#include "BaseTask.hpp"
 
+#include "SystemVariables.hpp"
+#include "SdWriterTask.hpp"
+#include "SensorTask.hpp"
+#include "WifiTask.hpp"
 // Define led pin
 #define BLINK_GPIO 13
 
@@ -37,10 +42,10 @@ esp_err_t event_handler(void *ctx, system_event_t *event)
 
 extern "C" void app_main(void)
 {
-    EventGroupHandle_t xCreatedEventGroup;
-    xCreatedEventGroup = xEventGroupCreate();
-
-    if( xCreatedEventGroup == NULL )
+    // EventGroupHandle_t xCreatedEventGroup;
+    // xCreatedEventGroup = xEventGroupCreate();
+    egh = xEventGroupCreate();
+    if( egh == NULL )
     {
         /* The event group was not created because there was insufficient
         FreeRTOS heap available. */
@@ -84,5 +89,9 @@ extern "C" void app_main(void)
     printf("%dMB %s flash\n", spi_flash_get_chip_size() / (1024 * 1024), (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
 
     // Start blink task
-    xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
+    // xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
+    auto sensorTask = new SensorTask(0);
+    auto sdWriterTask = new SdWriterTask(0);
+    auto wifiTask = new WifiTask(1);
+
 }

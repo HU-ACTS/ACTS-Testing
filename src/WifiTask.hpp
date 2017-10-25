@@ -4,7 +4,7 @@
 #include "BaseTask.hpp"
 class WifiTask : BaseTask {
 public:
-  WifiTask(unsigned int task_priority, EventGroupHandle_t& egh);
+  WifiTask(unsigned int task_priority);
 private:
 protected:
   void main_task();
