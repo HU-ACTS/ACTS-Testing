@@ -14,7 +14,6 @@
 #include "esp_wifi.h"
 #include "esp_deep_sleep.h"
 
-
 #include "nvs_flash.h"
 #include "sdkconfig.h"
 #include "test.hpp"
@@ -83,7 +82,7 @@ static void inline print_u64(uint64_t val)
 // Define led pin
 #define BLINK_GPIO    13
 
-#define TAG "ExampleTask"
+#define TAG "I2C"
 
 static EventGroupHandle_t wifi_event_group;
 
@@ -96,7 +95,7 @@ void sleep_task(void *pvParamter)
         printf("Woken up by something else\n");
     }
 
-    const int wakeup_time_sec = 5;
+    const int wakeup_time_sec = 20;
     printf("Enabling timer wakeup, %ds\n", wakeup_time_sec);
     esp_deep_sleep_enable_timer_wakeup(wakeup_time_sec * 1000000);
     printf("Entering deep sleep\n");
@@ -138,8 +137,47 @@ void i2c_task(void *pvParameter)
 
     while(1) {
         i2c_example_master_read_slave(I2C_EXAMPLE_MASTER_NUM, data_rd, 10);
+        printf("%d\n", (int)data_rd);
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
+}
+
+void i2c_scanner(void *pvParameter) {
+	i2c_config_t conf;
+	conf.mode = I2C_MODE_MASTER;
+	conf.sda_io_num = (gpio_num_t)I2C_EXAMPLE_MASTER_SDA_IO;
+	conf.scl_io_num = (gpio_num_t)I2C_EXAMPLE_MASTER_SCL_IO;
+	conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
+	conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
+	conf.master.clk_speed = 100000;
+	i2c_param_config(I2C_NUM_0, &conf);
+
+	i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
+
+	int i;
+	esp_err_t espRc;
+	printf("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
+	printf("00:         ");
+	for (i=3; i< 0x78; i++) {
+		i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+		i2c_master_start(cmd);
+		i2c_master_write_byte(cmd, (i << 1) | I2C_MASTER_WRITE, 1 /* expect ack */);
+		i2c_master_stop(cmd);
+
+		espRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+		if (i%16 == 0) {
+			printf("\n%.2x:", i);
+		}
+		if (espRc == 0) {
+			printf(" %.2x", i);
+		} else {
+			printf(" --");
+		}
+		//ESP_LOGD(tag, "i=%d, rc=%d (0x%x)", i, espRc, espRc);
+		i2c_cmd_link_delete(cmd);
+	}
+	printf("\n");
+	vTaskDelete(NULL);
 }
 
 void spi_task(void *pvParameter)
@@ -357,28 +395,27 @@ bool wifi_set_up_ap(char* SSID, char* PASS) {
 
 extern "C" void app_main(void)
 {
-    test newTest;
-
-    esp_chip_info_t chip_info;
-    esp_chip_info(&chip_info);
+    //esp_chip_info_t chip_info;
+    //esp_chip_info(&chip_info);
     printf("\n\n\nBooting complete!\n");
-    printf("This is ESP32 chip with %d CPU cores, WiFi%s%s, ", chip_info.cores, (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "", (chip_info.features & CHIP_FEATURE_BLE) ? "/BLE" : "");
-    printf("silicon revision %d, ", chip_info.revision);
-    printf("%dMB %s flash\n", spi_flash_get_chip_size() / (1024 * 1024), (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
+    //printf("This is ESP32 chip with %d CPU cores, WiFi%s%s, ", chip_info.cores, (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "", (chip_info.features & CHIP_FEATURE_BLE) ? "/BLE" : "");
+    //printf("silicon revision %d, ", chip_info.revision);
+    //printf("%dMB %s flash\n", spi_flash_get_chip_size() / (1024 * 1024), (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
 
-    nvs_flash_init();
-
+    //nvs_flash_init();
+    ESP_LOGI(TAG, "System initialized");
     //wifi_set_up_ap((char*)"Allyouare", (char*)"Meulen-2017");
-    wifi_connect_to_ap((char*)"eduroam", (char*)"Sander1994", 500);
-    esp_wifi_stop();
+    //wifi_connect_to_ap((char*)"eduroam", (char*)"Sander1994", 500);
+    //esp_wifi_stop();
 
-    xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
+    //xTaskCreate(&blink_task, "blink_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
 
     //xTaskCreate(&spi_task, "spi_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
-
-    //xTaskCreate(&i2c_task, "i2c_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
+    //i2c_scanner();
+    xTaskCreate(&i2c_task, "i2c_task", 2048, NULL, 5, NULL);
+    //xTaskCreate(&i2c_scanner, "i2c_scanner", 2048, NULL, 5, NULL);
 
     //xTaskCreate(&sleep_task, "sleep_task", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
 
-    xTaskCreate(timer_example_evt_task, "timer_evt_task", 2048, NULL, 5, NULL);
+    //xTaskCreate(timer_example_evt_task, "timer_evt_task", 2048, NULL, 5, NULL);
 }
